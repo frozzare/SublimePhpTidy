@@ -90,7 +90,7 @@ $docrootvars = array();
 // Enable the single cleanup functions
 $fix_token_case = true;
 $fix_builtin_functions_case = true;
-$replace_inline_tabs = true;
+$replace_inline_tabs = false; #1
 $replace_phptags = true;
 $replace_shell_comments = true;
 $fix_statement_brackets = true;
@@ -100,17 +100,15 @@ $fix_round_bracket_space = true;
 $add_file_docblock = false;
 $add_function_docblocks = false;
 $add_doctags = false;
-$fix_docblock_format = true;
+$fix_docblock_format = false;
 $fix_docblock_space = false;
 $add_blank_lines = false;
-$indent = true;
+$indent = false; #1
 
 ///////////// END OF DEFAULT CONFIGURATION ////////////////
 
 
 define( 'CONFIGFILE', dirname(__FILE__) . "/.wp-phptidy-config.php" );
-define( 'CACHEFILE', dirname(__FILE__) . "/.phptidy-cache" );
-
 
 error_reporting( E_ALL );
 
@@ -226,16 +224,10 @@ if ( $command=="files" ) {
 }
 
 // Read cache file
-if ( file_exists( CACHEFILE ) ) {
-	verbose( "Using cache file ".CACHEFILE."\n" );
-	$cache = unserialize( file_get_contents( CACHEFILE ) );
-	$cache_orig = $cache;
-} else {
-	$cache = array(
-		'md5sums' => array(),
-	);
-	$cache_orig = false;
-}
+$cache = array(
+	'md5sums' => array(),
+);
+$cache_orig = false;
 
 // Find functions and includes
 verbose( "Find functions and includes " );
@@ -325,11 +317,11 @@ foreach ( $files as $file ) {
 		break;
 	case "replace":
 
-		$backupfile = dirname( $file ).( dirname( $file )?"/":"" ).".".basename( $file ).".phptidybak~";
-		if ( !copy( $file, $backupfile ) ) {
-			echo "Error: The file '".$backupfile."' could not be saved.\n";
-			exit( 1 );
-		}
+		# $backupfile = dirname( $file ).( dirname( $file )?"/":"" ).".".basename( $file ).".phptidybak~";
+		# if ( !copy( $file, $backupfile ) ) {
+		#	echo "Error: The file '".$backupfile."' could not be saved.\n";
+		#	exit( 1 );
+		# }
 		if ( !file_put_contents( $file, $source ) ) {
 			echo "Error: The file '".$file."' could not be overwritten.\n";
 			exit( 1 );
@@ -363,12 +355,6 @@ foreach ( $files as $file ) {
 if ( $command=="replace" ) {
 	if ( $replaced ) {
 		verbose( "Replaced ".$replaced." files.\n" );
-	}
-	if ( $cache != $cache_orig ) {
-		verbose( "Write cache file ".CACHEFILE."\n" );
-		if ( !file_put_contents( CACHEFILE, serialize( $cache ) ) ) {
-			echo "Warning: The cache file '".CACHEFILE."' could not be saved.\n";
-		}
 	}
 }
 
@@ -1042,6 +1028,12 @@ function fix_separation_whitespace( &$tokens ) {
 
 	foreach ( $tokens as $key => &$token ) {
 		if ( is_string( $token ) ) {
+			if ($token === '!' && isset($tokens[$key+1]) && $tokens[$key+1][0] != T_WHITESPACE) {
+				array_splice( $tokens, $key+1, 0, array(
+					array( T_WHITESPACE, separation_whitespace( $control_structure ) )
+				) );
+				continue;
+			}
 
 			// Exactly 1 space or a newline between closing round bracket and opening curly bracket
 			if ( $tokens[$key] === ")" ) {

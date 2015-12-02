@@ -2,7 +2,7 @@
 #### [Sublime Text 2](http://www.sublimetext.com/2)
 
 ## About
-This is a Sublime Text 2 plugin allowing you to format your PHP code. 
+This is a Sublime Text 2 plugin allowing you to format your PHP code.
 
 It uses wp-phptidy, which is a little tool for formatting PHP code to conform the [WordPress Coding Standards](http://codex.wordpress.org/WordPress_Coding_Standards).
 
